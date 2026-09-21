@@ -1,0 +1,36 @@
+name: Actualizar Feed RSS
+
+on:
+  schedule:
+    # Se ejecuta automáticamente cada 30 minutos
+    - cron: '*/30 * * * *'
+  workflow_dispatch: # Permite forzar la actualización manualmente en GitHub
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Ejecutar script de TyC Sports
+        run: node index.js
+
+      - name: Guardar cambios y actualizar repositorio
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add feed.xml
+          git commit -m "bot: actualización de agenda TyC Sports" || exit 0
+          git push
